@@ -1,26 +1,56 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useRef, useState} from 'react';
 import './App.css';
+import NavBar from "./components/organism/Navbar";
+import SignUpForm from "./components/organism/SignUp";
+import {Routes} from "./router/types";
+import LoginForm from "./components/organism/Login";
+import Home from "./components/organism/Home";
+import {Organisation, Roles, User} from "./models/types";
+import {getMyOrganisation, getSavedUser} from "./services/Persistance";
+import Projects from "./components/organism/Projects";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [currentUser, setCurrentUser] = useState<User>();
+    const [currentRoute, setCurrentRoute] = useState<Routes>(Routes.Home);
+    const [myOrg, setMyOrg] = useState<Organisation>();
+
+    useEffect(() => {
+       getSavedUser().then(user => {
+           setCurrentUser(user);
+
+           if(user !== undefined) {
+               setCurrentRoute(Routes.Home);
+           } else {
+               setCurrentRoute(Routes.LogIn);
+           }
+       });
+
+       getMyOrganisation().then(org => setMyOrg(org));
+    }, []);
+
+    function renderRoute() {
+        switch (currentRoute) {
+            case Routes.LogIn:
+                return <LoginForm routeSelected={(route) => setCurrentRoute(route)}/>;
+            case Routes.SignUp:
+                return <SignUpForm routeSelected={(route) => setCurrentRoute(route)}/>;
+            case Routes.Home:
+                getSavedUser().then(user => setCurrentUser(user));
+                return <Home user={currentUser} myOrg={myOrg}/>;
+            case Routes.Projects:
+                return <Projects/>;
+            default:
+                return <Home user={currentUser} myOrg={myOrg}/>;
+        }
+    }
+
+    return (
+        <div className="App">
+            <NavBar routeSelected={(route) => setCurrentRoute(route)} isLoggedIn={currentUser !== undefined}
+                    isVolunteer={currentUser !== undefined && currentUser.role === Roles.volunteer}/>
+            {renderRoute()}
+        </div>
+    );
 }
 
 export default App;
