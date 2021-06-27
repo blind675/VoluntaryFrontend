@@ -30,4 +30,10 @@ export interface Project {
     id: string;
     name: string;
     organisation: Organisation;
+    tasks: Task[];
+}
+
+export interface Task {
+    id: string;
+    name: string;
 }
