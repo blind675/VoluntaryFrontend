@@ -32,6 +32,8 @@ async function authCall(method: Method, path: string, data: {}) {
 
         if (response.status === 200) {
 
+            console.log(' auth response data: ', response.data);
+
             const user: User = {
                 email: response.data.user.email,
                 username: response.data.user.username,
@@ -42,12 +44,16 @@ async function authCall(method: Method, path: string, data: {}) {
 
             if (user.role === Roles.organisation) {
                 const myOrg: Organisation = response.data.user.organization;
-
                 await saveMyOrganisation(myOrg);
             } else {
                 const volunteer: Volunteer = response.data.user.volunteer;
-
                 await saveVolunteer(volunteer);
+                const volunteerResponse = await callAPI('get', `/volunteers/${volunteer?.id}`);
+
+                if (volunteerResponse.status === 200) {
+                    const organisations: Organisation[] = volunteerResponse.data.organisations;
+                    await saveMyOrganisations(organisations);
+                }
             }
 
             return user;

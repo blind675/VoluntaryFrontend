@@ -1,11 +1,20 @@
 import {Organisation, Roles, User} from "../../models/types";
+import {useEffect, useState} from "react";
+import {getMyOrganisation, getSavedUser} from "../../services/Persistance";
 
-export type Props = {
-    user?: User;
-    myOrg?: Organisation;
-};
+export default function Home() {
+    const [myOrg, setMyOrg] = useState<Organisation>();
+    const [user, setUser] = useState<User>();
 
-export default function Home({user, myOrg}: Props) {
+    useEffect(() => {
+        getSavedUser().then(user => setUser(user));
+
+        getMyOrganisation().then((org) => {
+            console.log(' !!! ');
+            setMyOrg(org);
+        });
+    }, []);
+
     return (
         <div style={{marginTop: 30}}>
             <h2>Welcome {user?.role === Roles.volunteer ? user.username : 'to'}</h2>

@@ -5,41 +5,49 @@ import SignUpForm from "./components/organism/SignUp";
 import {Routes} from "./router/types";
 import LoginForm from "./components/organism/Login";
 import Home from "./components/organism/Home";
-import {Organisation, Roles, User} from "./models/types";
-import {getMyOrganisation, getSavedUser} from "./services/Persistance";
+import {Roles, User} from "./models/types";
+import {getSavedUser} from "./services/Persistance";
 import Projects from "./components/organism/Projects";
 import Organisations from "./components/organism/Organisations";
 import Volunteers from "./components/organism/Volunteers";
 
 function App() {
     const [currentUser, setCurrentUser] = useState<User>();
-    const [currentRoute, setCurrentRoute] = useState<Routes>(Routes.Home);
-    const [myOrg, setMyOrg] = useState<Organisation>();
+    const [currentRoute, setCurrentRoute] = useState<Routes>(Routes.LogIn);
 
     useEffect(() => {
-       getSavedUser().then(user => {
-           setCurrentUser(user);
-
-           if(user !== undefined) {
-               setCurrentRoute(Routes.Home);
-           } else {
-               setCurrentRoute(Routes.LogIn);
-           }
-       });
-
-       getMyOrganisation().then(org => setMyOrg(org));
-
+        getCurrentUser();
     }, []);
+
+    function getCurrentUser() {
+        getSavedUser().then(user => {
+            setCurrentUser(user);
+
+            if (user !== undefined) {
+                setCurrentRoute(Routes.Home);
+            } else {
+                setCurrentRoute(Routes.LogIn);
+            }
+        });
+
+    }
 
     function renderRoute() {
         switch (currentRoute) {
             case Routes.LogIn:
-                return <LoginForm routeSelected={(route) => setCurrentRoute(route)}/>;
+                return <LoginForm routeSelected={(route) => {
+                    setCurrentRoute(route);
+                    getCurrentUser();
+                }}
+                />;
             case Routes.SignUp:
-                return <SignUpForm routeSelected={(route) => setCurrentRoute(route)}/>;
+                return <SignUpForm routeSelected={(route) => {
+                    setCurrentRoute(route);
+                    getCurrentUser();
+                }}
+                />;
             case Routes.Home:
-                getSavedUser().then(user => setCurrentUser(user));
-                return <Home user={currentUser} myOrg={myOrg}/>;
+                return <Home />;
             case Routes.Projects:
                 return <Projects/>;
             case Routes.Organisations:
@@ -47,13 +55,13 @@ function App() {
             case Routes.Volunteers:
                 return <Volunteers/>;
             default:
-                return <Home user={currentUser} myOrg={myOrg}/>;
+                return null;
         }
     }
 
     return (
         <div className="App">
-            <NavBar routeSelected={(route) => setCurrentRoute(route)} isLoggedIn={currentUser !== undefined}
+            <NavBar routeSelected={(route) => {setCurrentRoute(route)}} isLoggedIn={currentUser !== undefined}
                     isVolunteer={currentUser !== undefined && currentUser.role === Roles.volunteer}/>
             {renderRoute()}
         </div>
