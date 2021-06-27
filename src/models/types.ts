@@ -15,7 +15,9 @@ export interface User {
 }
 
 export interface Volunteer extends User {
+    id?: string
     interests: string;
+    organisations?: Organisation[];
 }
 
 export interface Organisation extends User {

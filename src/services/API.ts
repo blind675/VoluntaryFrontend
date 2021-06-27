@@ -1,8 +1,15 @@
 import axios, {Method} from "axios";
 import {Organisation, Roles, User, Volunteer} from "../models/types";
-import {getMyOrganisation, getSavedUser, saveMyOrganisation, saveUser} from "./Persistance";
+import {
+    getMyOrganisation, getMyOrganisations,
+    getSavedUser,
+    getVolunteer,
+    saveMyOrganisation, saveMyOrganisations,
+    saveUser,
+    saveVolunteer
+} from "./Persistance";
 
-const API_BASE_URL = 'https://voluntary-backend.herokuapp.com/';
+const API_BASE_URL = 'https://voluntary-backend.herokuapp.com';
 
 
 async function callAPI(method: Method, path: string, data?: {}) {
@@ -18,6 +25,7 @@ async function callAPI(method: Method, path: string, data?: {}) {
 
     return response
 }
+
 async function authCall(method: Method, path: string, data: {}) {
     try {
         const response = await callAPI(method, path, data);
@@ -32,10 +40,14 @@ async function authCall(method: Method, path: string, data: {}) {
             }
             await saveUser(user);
 
-            if(user.role === Roles.organisation) {
+            if (user.role === Roles.organisation) {
                 const myOrg: Organisation = response.data.user.organization;
 
                 await saveMyOrganisation(myOrg);
+            } else {
+                const volunteer: Volunteer = response.data.user.volunteer;
+
+                await saveVolunteer(volunteer);
             }
 
             return user;
@@ -51,7 +63,7 @@ async function authCall(method: Method, path: string, data: {}) {
 }
 
 async function createAccount(data: {}) {
-    return authCall('post', 'auth/local/register', data);
+    return authCall('post', '/auth/local/register', data);
 }
 
 export async function createOrganisation(data: Organisation) {
@@ -68,14 +80,14 @@ export async function login(email: string, password: string) {
         password: password
     }
 
-    return authCall('post', 'auth/local',data);
+    return authCall('post', '/auth/local', data);
 }
 
 export async function addProject(name: string) {
     try {
         const myOrg = await getMyOrganisation();
 
-        const response = await callAPI('post', 'projects', {
+        const response = await callAPI('post', '/projects', {
             organisation: myOrg?.id,
             name
         });
@@ -96,9 +108,62 @@ export async function fetchProjects() {
     try {
         const myOrg = await getMyOrganisation();
 
-        const response = await callAPI('get', `projects?organisation.id=${myOrg?.id}` );
+        const response = await callAPI('get', `/projects?organisation.id=${myOrg?.id}`);
 
         if (response.status === 200) {
+            return response.data;
+        }
+
+        alert(response.statusText);
+        return undefined;
+    } catch (err) {
+        alert(err);
+        return undefined;
+    }
+}
+
+export async function fetchOrganisations() {
+    try {
+        const response = await callAPI('get', `/organisations`);
+
+        if (response.status === 200) {
+            return response.data as Organisation[];
+        }
+
+        alert(response.statusText);
+        return undefined;
+    } catch (err) {
+        alert(err);
+        return undefined;
+    }
+}
+
+export async function joinOrganisation(org: Organisation) {
+    try {
+        const volunteer = await getVolunteer();
+        const myOrganisations = await getMyOrganisations();
+
+        let myOrgs: Organisation[] = [];
+        if(myOrganisations) {
+            myOrgs = myOrganisations
+        }
+
+        myOrgs.push(org);
+
+        const organisationsIDs = myOrgs.map((org)=> org.id);
+
+        console.log('volunteer: ', volunteer);
+        console.log('org: ', org);
+        console.log('myOrgs: ', myOrgs);
+        console.log('myOrganisations: ', myOrganisations);
+        console.log('organisationsIDs: ', organisationsIDs);
+
+        const response = await callAPI('put', `/volunteers/${volunteer?.id}`, {organisations: organisationsIDs});
+
+        if (response.status === 200) {
+
+            await saveMyOrganisations(myOrgs);
+
             return response.data;
         }
 

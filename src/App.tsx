@@ -8,6 +8,7 @@ import Home from "./components/organism/Home";
 import {Organisation, Roles, User} from "./models/types";
 import {getMyOrganisation, getSavedUser} from "./services/Persistance";
 import Projects from "./components/organism/Projects";
+import Organisations from "./components/organism/Organisations";
 
 function App() {
     const [currentUser, setCurrentUser] = useState<User>();
@@ -26,6 +27,7 @@ function App() {
        });
 
        getMyOrganisation().then(org => setMyOrg(org));
+
     }, []);
 
     function renderRoute() {
@@ -39,6 +41,8 @@ function App() {
                 return <Home user={currentUser} myOrg={myOrg}/>;
             case Routes.Projects:
                 return <Projects/>;
+            case Routes.Organisations:
+                return <Organisations/>;
             default:
                 return <Home user={currentUser} myOrg={myOrg}/>;
         }
