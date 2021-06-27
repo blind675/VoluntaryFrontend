@@ -152,12 +152,6 @@ export async function joinOrganisation(org: Organisation) {
 
         const organisationsIDs = myOrgs.map((org)=> org.id);
 
-        console.log('volunteer: ', volunteer);
-        console.log('org: ', org);
-        console.log('myOrgs: ', myOrgs);
-        console.log('myOrganisations: ', myOrganisations);
-        console.log('organisationsIDs: ', organisationsIDs);
-
         const response = await callAPI('put', `/volunteers/${volunteer?.id}`, {organisations: organisationsIDs});
 
         if (response.status === 200) {
@@ -165,6 +159,23 @@ export async function joinOrganisation(org: Organisation) {
             await saveMyOrganisations(myOrgs);
 
             return response.data;
+        }
+
+        alert(response.statusText);
+        return undefined;
+    } catch (err) {
+        alert(err);
+        return undefined;
+    }
+}
+
+export async function fetchVolunteers() {
+    try {
+        const myOrg = await getMyOrganisation();
+        const response = await callAPI('get', `/organisations/${myOrg?.id}`);
+
+        if (response.status === 200) {
+            return response.data.volunteers as Volunteer[];
         }
 
         alert(response.statusText);

@@ -32,7 +32,7 @@ export default function Organisations() {
                     });
                     return !contains;
                 });
-                
+
                 setOrganisations(difference);
                 setIsLoading(false);
             });

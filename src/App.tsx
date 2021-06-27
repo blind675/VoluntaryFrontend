@@ -9,6 +9,7 @@ import {Organisation, Roles, User} from "./models/types";
 import {getMyOrganisation, getSavedUser} from "./services/Persistance";
 import Projects from "./components/organism/Projects";
 import Organisations from "./components/organism/Organisations";
+import Volunteers from "./components/organism/Volunteers";
 
 function App() {
     const [currentUser, setCurrentUser] = useState<User>();
@@ -43,6 +44,8 @@ function App() {
                 return <Projects/>;
             case Routes.Organisations:
                 return <Organisations/>;
+            case Routes.Volunteers:
+                return <Volunteers/>;
             default:
                 return <Home user={currentUser} myOrg={myOrg}/>;
         }
