@@ -47,7 +47,11 @@ function App() {
                 }}
                 />;
             case Routes.Home:
-                return <Home />;
+                return <Home routeSelected={(route) => {
+                    setCurrentRoute(route);
+                    getCurrentUser();
+                }}
+                />;
             case Routes.Projects:
                 return <Projects/>;
             case Routes.Organisations:
@@ -61,7 +65,9 @@ function App() {
 
     return (
         <div className="App">
-            <NavBar routeSelected={(route) => {setCurrentRoute(route)}} isLoggedIn={currentUser !== undefined}
+            <NavBar routeSelected={(route) => {
+                setCurrentRoute(route)
+            }} isLoggedIn={currentUser !== undefined}
                     isVolunteer={currentUser !== undefined && currentUser.role === Roles.volunteer}/>
             {renderRoute()}
         </div>
